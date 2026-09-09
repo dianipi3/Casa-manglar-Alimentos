@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bodega Venezolana - Pedidos por WhatsApp</title>
+    <!-- Tailwind CSS para un diseño rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <!-- Encabezado -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">🇻🇪 Sabor Venezolano</h1>
+            <p class="text-gray-600 mt-2">Arma tu carrito y pídelo directo al WhatsApp</p>
+        </header>
+
+        <!-- Lista de Productos -->
+        <div id="product-list" class="space-y-4 mb-24">
+            <!-- Los productos se inyectan dinámicamente con JavaScript -->
+        </div>
+    </div>
+
+    <!-- Barra Inferior flotante del Carrito -->
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 hidden">
+        <div class="container mx-auto max-w-2xl flex justify-between items-center">
+            <div>
+                <span class="text-gray-600 text-sm">Total a pagar:</span>
+                <p id="cart-total" class="text-xl font-bold text-green-600">$0.00</p>
+            </div>
+            <button onclick="enviarPedidoWhatsApp()" class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-xl shadow transition duration-200 flex items-center gap-2">
+                Enviar Pedido por WhatsApp 📲
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Define tus productos (Modifica precios y nombres aquí)
+        // REEMPLAZA '5491112345678' con tu número de WhatsApp real (Código de país + área + número, sin signos + ni espacios)
+        const WHATSAPP_NUMBER = "5555996856863"; 
+
+        const products = [
+            { id: 1, name: "Harina P.A.N. Blanca 1kg", price: 2.50, emoji: "🌽" },
+            { id: 2, name: "Harina P.A.N. Amarilla 1kg", price: 2.50, emoji: "🌽" },
+            { id: 3, name: "Diablitos Underwood Lata 115g", price: 3.00, emoji: "👹" },
+            { id: 4, name: "Malta Polar Lata", price: 1.75, emoji: "🍺" },
+            { id: 5, name: "Pack 6 Maltas Polars", price: 10.00, emoji: "📦" }
+        ];
+
+        // Estado del carrito
+        let cart = {};
+
+        // Renderizar productos en la pantalla
+        function renderProducts() {
+            const container = document.getElementById('product-list');
+            container.innerHTML = products.map(product => `
+                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">${product.emoji}</span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${product.name}</h3>
+                            <p class="text-gray-500 text-sm">$${product.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="updateQuantity(${product.id}, -1)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 w-8 h-8 rounded-full font-bold flex items-center justify-center">-</button>
+                        <span id="qty-${product.id}" class="font-bold w-4 text-center">0</span>
+                        <button onclick="updateQuantity(${product.id}, 1)" class="bg-green-500 hover:bg-green-600 text-white w-8 h-8 rounded-full font-bold flex items-center justify-center">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Actualizar cantidades en el carrito
+        function updateQuantity(productId, change) {
+            if (!cart[productId]) {
+                cart[productId] = 0;
+            }
+            cart[productId] += change;
+
+            if (cart[productId] < 0) {
+                cart[productId] = 0;
+            }
+
+            // Actualizar número en pantalla
+            document.getElementById(`qty-${productId}`).innerText = cart[productId];
+
+            updateCartSummary();
+        }
+
+        // Calcular totales y mostrar barra inferior
+        function updateCartSummary() {
+            let total = 0;
+            let hasItems = false;
+
+            for (let id in cart) {
+                if (cart[id] > 0) {
+                    const product = products.find(p => p.id == id);
+                    total += product.price * cart[id];
+                    hasItems = true;
+                }
+            }
+
+            const cartBar = document.getElementById('cart-bar');
+            const totalElement = document.getElementById('cart-total');
+
+            totalElement.innerText = `$${total.toFixed(2)}`;
+
+            if (hasItems) {
+                cartBar.classList.remove('hidden');
+            } else {
+                cartBar.classList.add('hidden');
+            }
+        }
+
+        // Generar texto y redirigir a WhatsApp
+        function enviarPedidoWhatsApp() {
+            let mensaje = "¡Hola! 👋 Quiero hacer el siguiente pedido:\n\n";
+            let total = 0;
+
+            for (let id in cart) {
+                if (cart[id] > 0) {
+                    const product = products.find(p => p.id == id);
+                    const subtotal = product.price * cart[id];
+                    total += subtotal;
+                    mensaje += `▪️ ${cart[id]}x ${product.name} ($${subtotal.toFixed(2)})\n`;
+                }
+            }
+
+            mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\nPor favor, indíquenme los pasos para el pago y envío. ¡Gracias!`;
+
+            // Codificar mensaje para URL de WhatsApp
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+            
+            // Abrir WhatsApp
+            window.open(url, '_blank');
+        }
+
+        // Inicializar la aplicación al cargar
+        renderProducts();
+    </script>
+</body>
+</html>
