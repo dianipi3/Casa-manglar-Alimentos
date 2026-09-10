@@ -9,11 +9,40 @@
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
-        <!-- Encabezado -->
+    <!-- ========================================= -->
+    <!-- 1. PANTALLA DE BIENVENIDA                   -->
+    <!-- ========================================= -->
+    <div id="welcome-screen" class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center">
+            <div class="text-5xl mb-4">🇻🇪</div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">¡Sabor Venezolano!</h1>
+            <p class="text-gray-600 text-sm mb-6">Los sabores que extrañas, directos a tu casa. Ingresa tus datos para ver el menú y hacer tu pedido.</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Tu Nombre:</label>
+                    <input type="text" id="client-name" placeholder="Ej. María Pérez" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-green-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Tu Zona / Dirección de entrega:</label>
+                    <input type="text" id="client-address" placeholder="Ej. Centro / Bairro Lourdes" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-green-500">
+                </div>
+                <button onclick="iniciarCatalogo()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow transition duration-200 mt-2">
+                    Ver Menú y Comprar 🛒
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- 2. CATÁLOGO Y CARRITO (Oculto al inicio)   -->
+    <!-- ========================================= -->
+    <div id="catalog-screen" class="container mx-auto px-4 py-8 max-w-2xl hidden">
+        <!-- Encabezado con saludo personalizado -->
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-800">🇻🇪 Sabor Venezolano</h1>
-            <p class="text-gray-600 mt-2">Arma tu carrito y pídelo directo al WhatsApp</p>
+            <p id="greeting-text" class="text-green-600 font-semibold mt-1"></p>
+            <p class="text-gray-500 text-sm">Arma tu carrito y pídelo directo al WhatsApp</p>
         </header>
 
         <!-- Lista de Productos -->
@@ -36,20 +65,42 @@
     </div>
 
     <script>
-        // 1. Define tus productos (Modifica precios y nombres aquí)
-        // REEMPLAZA '5491112345678' con tu número de WhatsApp real (Código de país + área + número, sin signos + ni espacios)
-        const WHATSAPP_NUMBER = "5555996856863"; 
+        // REEMPLAZA ESTE NÚMERO con tu WhatsApp real (Código de país + área + número, sin signos + ni espacios)
+        const WHATSAPP_NUMBER = "5554996856863"; 
 
         const products = [
-            { id: 1, name: "Harina P.A.N. Blanca 1kg", price: 2.50, emoji: "🌽" },
-            { id: 2, name: "Harina P.A.N. Amarilla 1kg", price: 2.50, emoji: "🌽" },
-            { id: 3, name: "Diablitos Underwood Lata 115g", price: 3.00, emoji: "👹" },
-            { id: 4, name: "Malta Polar Lata", price: 1.75, emoji: "🍺" },
-            { id: 5, name: "Pack 6 Maltas Polars", price: 10.00, emoji: "📦" }
+            { id: 1, name: "Harina P.A.N. Blanca 1kg", price: 15.00, emoji: "🌽" },
+            { id: 2, name: "Harina P.A.N. Amarilla 1kg", price: 15.00, emoji: "🌽" },
+            { id: 3, name: "Diablitos Underwood Lata 115g", price: 12.00, emoji: "👹" },
+            { id: 4, name: "Malta Polar Lata", price: 8.00, emoji: "🍺" },
+            { id: 5, name: "Pack 6 Maltas Polars", price: 45.00, emoji: "📦" }
         ];
 
-        // Estado del carrito
         let cart = {};
+        let clienteInfo = { name: "", address: "" };
+
+        // Función para validar datos y pasar al catálogo
+        function iniciarCatalogo() {
+            const nameInput = document.getElementById('client-name').value.trim();
+            const addressInput = document.getElementById('client-address').value.trim();
+
+            if (nameInput === "") {
+                alert("Por favor, ingresa tu nombre para continuar.");
+                return;
+            }
+
+            clienteInfo.name = nameInput;
+            clienteInfo.address = addressInput !== "" ? addressInput : "No especificada";
+
+            // Ocultar pantalla de bienvenida y mostrar catálogo
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('catalog-screen').classList.remove('hidden');
+
+            // Mostrar saludo personalizado
+            document.getElementById('greeting-text').innerText = `¡Hola, ${clienteInfo.name}! 👋`;
+
+            renderProducts();
+        }
 
         // Renderizar productos en la pantalla
         function renderProducts() {
@@ -83,9 +134,7 @@
                 cart[productId] = 0;
             }
 
-            // Actualizar número en pantalla
             document.getElementById(`qty-${productId}`).innerText = cart[productId];
-
             updateCartSummary();
         }
 
@@ -114,9 +163,11 @@
             }
         }
 
-        // Generar texto y redirigir a WhatsApp
+        // Generar texto y redirigir a WhatsApp con los datos del cliente
         function enviarPedidoWhatsApp() {
-            let mensaje = "¡Hola! 👋 Quiero hacer el siguiente pedido:\n\n";
+            let mensaje = `¡Hola! 👋 Mi nombre es *${clienteInfo.name}* y quiero hacer un pedido:\n`;
+            mensaje += `📍 *Entrega en:* ${clienteInfo.address}\n\n*Detalle del pedido:*\n`;
+            
             let total = 0;
 
             for (let id in cart) {
@@ -128,17 +179,11 @@
                 }
             }
 
-            mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\nPor favor, indíquenme los pasos para el pago y envío. ¡Gracias!`;
+            mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\nPor favor, indíquenme los datos para el pago. ¡Gracias!`;
 
-            // Codificar mensaje para URL de WhatsApp
             const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
-            
-            // Abrir WhatsApp
             window.open(url, '_blank');
         }
-
-        // Inicializar la aplicación al cargar
-        renderProducts();
     </script>
 </body>
 </html>
