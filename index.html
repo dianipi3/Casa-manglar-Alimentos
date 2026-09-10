@@ -15,7 +15,7 @@
     <div id="welcome-screen" class="min-h-screen flex items-center justify-center px-4">
         <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center">
             <div class="flex justify-center mb-4">
-            <img src="logo.png" alt="Logo de la Bodega" class="w-50 h-50 object-contain rounded-full shadow-sm">
+            <img src="logo.png" alt="Logo de la Bodega" class="w-40 h-50 object-contain rounded-full shadow-sm">
         </div>
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Casa Manglar Alimentos.</h1>
             <p class="text-green-700 font-bold text-sm mb-4">Nuestras Formalidades de Entrega.</p>
@@ -46,7 +46,7 @@
     <div id="catalog-screen" class="container mx-auto px-4 py-8 max-w-2xl hidden">
         <header class="text-center mb-8">
             <div class="flex justify-center mb-3">
-            <img src="logo.png" alt="Logo de la Bodega" class="w-50 h-50 object-contain rounded-full shadow-sm">
+            <img src="logo.png" alt="Logo de la Bodega" class="w-40 h-40 object-contain rounded-full shadow-sm">
         </div>
             <h1 class="text-3xl font-bold text-gray-800">Casa Manglar Alimentos</h1>
             <p id="greeting-text" class="text-green-600 font-semibold mt-1"></p>
@@ -69,7 +69,7 @@
         </div>
     </div>
 
-    <!-- MODAL AUTOMÁTICO DE PAGO Y PIX (Aparece al enviar el pedido) -->
+    <!-- MODAL AUTOMÁTICO DE PAGO Y PIX (Permanecerá abierto hasta que el usuario lo cierre) -->
     <div id="pix-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center px-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full text-center">
             <div class="text-4xl mb-2">🎉</div>
@@ -86,8 +86,8 @@
                 <p class="text-xs text-red-600 font-semibold mt-2">⚠️ Envía tu comprobante por el chat de WhatsApp junto con tu número de pedido.</p>
             </div>
 
-            <button onclick="cerrarModalYReiniciar()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow transition duration-200">
-                ¡Entendido, listo! 👍
+            <button onclick="cerrarModal()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow transition duration-200">
+                Cerrar y hacer otro pedido 🛒
             </button>
         </div>
     </div>
@@ -96,8 +96,8 @@
         const WHATSAPP_NUMBER = "5554996856863"; 
 
         // CONFIGURA TUS DATOS PIX AQUÍ
-        const PIX_KEY = "711.429.702-56"; 
-        const PIX_NAME = "Diana Pitre - BANCO ITAU";
+        const PIX_KEY = "71142970256"; 
+        const PIX_NAME = "Diana Pitre BANCO ITAU";
 
         const products = [
             { id: 1, name: "Harina P.A.N. Blanca 1kg", price: 15.00, emoji: "🌽" },
@@ -188,7 +188,6 @@
         }
 
         function enviarPedidoWhatsApp() {
-            // Generar un número de pedido aleatorio de 4 dígitos
             const orderNumber = Math.floor(1000 + Math.random() * 9000);
 
             let mensaje = `¡Hola! 👋 Mi nombre es *${clienteInfo.name}* y quiero hacer un pedido:\n`;
@@ -208,11 +207,10 @@
 
             mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\nPor favor, confírmenme la recepción del pedido. ¡Gracias!`;
 
-            // 1. Abrir WhatsApp con el pedido limpio (solo productos, nombre y total)
             const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
             window.open(url, '_blank');
 
-            // 2. Mostrar la respuesta automática con la llave PIX y el número de pedido en la pantalla del cliente
+            // Mostrar el modal y dejarlo estático
             document.getElementById('modal-order-number').innerText = `N° de Pedido: #CM-${orderNumber}`;
             document.getElementById('modal-pix-key').innerText = PIX_KEY;
             document.getElementById('modal-pix-name').innerText = PIX_NAME;
@@ -226,9 +224,10 @@
             });
         }
 
-        function cerrarModalYReiniciar() {
+        function cerrarModal() {
+            // Solo oculta el cuadro y limpia la página para un nuevo pedido si el usuario presiona el botón
             document.getElementById('pix-modal').classList.add('hidden');
-            location.reload(); // Recarga la página para permitir un nuevo pedido si lo desean
+            location.reload(); 
         }
     </script>
 </body>
