@@ -10,17 +10,19 @@
 <body class="bg-gray-100 font-sans">
 
     <!-- ========================================= -->
-    <!-- 1. PANTALLA DE BIENVENIDA                   -->
+    <!-- 1. PANTALLA DE BIENVENIDA                 -->
     <!-- ========================================= -->
     <div id="welcome-screen" class="min-h-screen flex items-center justify-center px-4">
         <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center">
             <div class="flex justify-center mb-4">
-            <img src="logo.png" alt="Logo de la Bodega" class="w-40 h-40 object-contain rounded-full shadow-sm">
+            <img src="logo.png" alt="Logo de la Bodega" class="w-50 h-50 object-contain rounded-full shadow-sm">
         </div>
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Casa Manglar Alimentos.</h1>
-            <p class="text-blue-800 text-sm mb-6">Nuestras Formalidades de Entrega.</p>
-            <p class="text-gray-500 text-xs font-semibold mb-6">PEDIDOS REALIZADOS DE 7:30AM - 11:30AM.<br><span class="text-red-600">Serán entregados de 11:45am - 01:30PM</span></p>
-            <p class="text-gray-500 text-xs font-semibold mb-6">PEDIDOS REALIZADOS DE 1:00PM - 05:30PM.<br><span class="text-red-600">Serán entregados de 05:45pm - 07:30PM</span></p>
+            <p class="text-green-700 font-bold text-sm mb-4">Nuestras Formalidades de Entrega.</p>
+            
+            <p class="text-gray-600 text-xs font-semibold mb-3">🕒 PEDIDOS REALIZADOS DE 7:30AM - 11:30AM.<br><span class="text-red-600">Serán entregados de 11:45am - 01:30pm</span></p>
+            <p class="text-gray-600 text-xs font-semibold mb-4">🕒 PEDIDOS REALIZADOS DE 1:00PM - 05:30PM.<br><span class="text-red-600">Serán entregados de 05:45pm - 07:30pm</span></p>
+            
             <p class="text-gray-500 text-xs font-semibold mb-6">Ingresa tus datos para ver el menú y hacer tu pedido.</p>
             <div class="space-y-4 text-left">
                 <div>
@@ -45,7 +47,7 @@
         <!-- Encabezado con saludo personalizado -->
         <header class="text-center mb-8">
             <div class="flex justify-center mb-3">
-            <img src="logo.png" alt="Logo de la Bodega" class="w-40 h-40 object-contain rounded-full shadow-sm">
+            <img src="logo.png" alt="Logo de la Bodega" class="w-50 h-50 object-contain rounded-full shadow-sm">
         </div>
             <h1 class="text-3xl font-bold text-gray-800">Casa Manglar Alimentos</h1>
             <p id="greeting-text" class="text-green-600 font-semibold mt-1"></p>
@@ -72,8 +74,11 @@
     </div>
 
     <script>
-        // REEMPLAZA ESTE NÚMERO con tu WhatsApp real (Código de país + área + número, sin signos + ni espacios)
         const WHATSAPP_NUMBER = "5554996856863"; 
+
+        // CONFIGURA AQUÍ TUS DATOS DE PIX
+        const PIX_KEY = "TU_LLAVE_PIX_AQUI"; 
+        const PIX_NAME = "Nombre del Titular o Banco";
 
         const products = [
             { id: 1, name: "Harina P.A.N. Blanca 1kg", price: 15.00, emoji: "🌽" },
@@ -86,7 +91,6 @@
         let cart = {};
         let clienteInfo = { name: "", address: "" };
 
-        // Función para validar datos y pasar al catálogo
         function iniciarCatalogo() {
             const nameInput = document.getElementById('client-name').value.trim();
             const addressInput = document.getElementById('client-address').value.trim();
@@ -99,17 +103,13 @@
             clienteInfo.name = nameInput;
             clienteInfo.address = addressInput !== "" ? addressInput : "No especificada";
 
-            // Ocultar pantalla de bienvenida y mostrar catálogo
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('catalog-screen').classList.remove('hidden');
-
-            // Mostrar saludo personalizado
             document.getElementById('greeting-text').innerText = `¡Hola, ${clienteInfo.name}! 👋`;
 
             renderProducts();
         }
 
-        // Renderizar productos en la pantalla
         function renderProducts() {
             const container = document.getElementById('product-list');
             container.innerHTML = products.map(product => `
@@ -130,7 +130,6 @@
             `).join('');
         }
 
-        // Actualizar cantidades en el carrito
         function updateQuantity(productId, change) {
             if (!cart[productId]) {
                 cart[productId] = 0;
@@ -145,7 +144,6 @@
             updateCartSummary();
         }
 
-        // Calcular totales y mostrar barra inferior
         function updateCartSummary() {
             let total = 0;
             let hasItems = false;
@@ -170,7 +168,6 @@
             }
         }
 
-        // Generar texto y redirigir a WhatsApp con los datos del cliente
         function enviarPedidoWhatsApp() {
             let mensaje = `¡Hola! 👋 Mi nombre es *${clienteInfo.name}* y quiero hacer un pedido:\n`;
             mensaje += `📍 *Entrega en:* ${clienteInfo.address}\n\n*Detalle del pedido:*\n`;
@@ -186,7 +183,11 @@
                 }
             }
 
-            mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\nPor favor, indíquenme los datos para el pago. ¡Gracias!`;
+            mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\n`;
+            mensaje += `💳 *Datos para pagar por PIX:*\n`;
+            mensaje += `• Llave PIX: \`${PIX_KEY}\`\n`;
+            mensaje += `• Beneficiario: ${PIX_NAME}\n\n`;
+            mensaje += `Adjunto mi comprobante de pago. ¡Gracias!`;
 
             const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
             window.open(url, '_blank');
