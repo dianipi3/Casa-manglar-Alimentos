@@ -15,6 +15,304 @@
     <div id="welcome-screen" class="min-h-screen flex items-center justify-center px-4">
         <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center">
             <div class="flex justify-center mb-4">
+                <img src="logo.png" alt="Logo de la Bodega" class="w-50 h-50 object-contain rounded-full shadow-sm">
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-1">Casa Manglar Alimentos.</h1>
+            <p class="text-green-700 font-bold text-sm" style="margin: 0; padding: 0;">Nuestras Formalidades de Entrega.</p>
+            <p class="text-gray-600 text-xs font-semibold leading-tight mb-6" style="margin: 0; padding: 0; margin-top: 2px;">
+                🕒 PEDIDOS DE 7:30AM - 11:30AM. <span class="text-red-600">Entregas: 11:45am - 01:30pm</span><br>
+                🕒 PEDIDOS DE 1:00PM - 05:30PM. <span class="text-red-600">Entregas: 05:45pm - 07:30pm</span>
+            </p>
+            
+            <p class="text-gray-500 text-xs font-semibold mb-6">Ingresa tu nombre para ver el menú y hacer tu pedido.</p>
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Tu Nombre:</label>
+                    <input type="text" id="client-name" placeholder="Ej. María Pérez" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-green-500">
+                </div>
+                <!-- Nota: Quitamos el campo de dirección de aquí porque ahora se elige en el modal de pago -->
+                <button onclick="iniciarCatalogo()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow transition duration-200 mt-2">
+                    Ver Menú y Comprar 🛒
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- 2. CATÁLOGO Y CARRITO (Oculto al inicio)   -->
+    <!-- ========================================= -->
+    <div id="catalog-screen" class="container mx-auto px-4 py-8 max-w-2xl hidden">
+        <header class="text-center mb-8">
+            <div class="flex justify-center mb-3">
+                <img src="logo.png" alt="Logo de la Bodega" class="w-50 h-50 object-contain rounded-full shadow-sm">
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">Casa Manglar Alimentos</h1>
+            <p id="greeting-text" class="text-green-600 font-semibold mt-1"></p>
+            <p class="text-gray-500 text-sm">Arma tu carrito y pídelo directo al WhatsApp</p>
+        </header>
+
+        <div id="product-list" class="space-y-4 mb-24"></div>
+    </div>
+
+    <!-- Barra Inferior flotante del Carrito -->
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 hidden">
+        <div class="container mx-auto max-w-2xl flex justify-between items-center">
+            <div>
+                <span class="text-gray-600 text-sm">Total a pagar:</span>
+                <p id="cart-total" class="text-xl font-bold text-green-600">$0.00</p>
+            </div>
+            <button onclick="prepararPedido()" class="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-xl shadow transition duration-200 flex items-center gap-2">
+                Generar Pedido y Ver PIX 📲
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL FIJO DE OPCIÓN DE ENTREGA Y PAGO PIX -->
+    <div id="pix-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center px-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full text-center">
+            <div class="text-3xl mb-1">🎉</div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">¡Pedido Generado con Éxito!</h3>
+            <p id="modal-order-number" class="text-green-600 font-bold text-xs mb-3">N° de Pedido: #CM-0000</p>
+            
+            <!-- PASO A: Selector de Entrega -->
+            <div class="bg-gray-50 p-3 rounded-xl text-left border border-gray-200 mb-3">
+                <label class="block text-xs text-gray-700 font-bold mb-1">📦 ¿Cómo deseas recibir tu pedido?</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <button type="button" onclick="seleccionarEntrega('retiro')" id="btn-retiro" class="py-2 px-3 text-xs font-semibold rounded-lg border border-green-500 bg-green-50 text-green-700 transition">
+                        🚶‍♂️ Retirar en Local
+                    </button>
+                    <button type="button" onclick="seleccionarEntrega('envio')" id="btn-envio" class="py-2 px-3 text-xs font-semibold rounded-lg border border-gray-300 bg-white text-gray-700 transition">
+                        🛵 Envío a Domicilio
+                    </button>
+                </div>
+
+                <!-- Campo dinámico para dirección (si elige envío) o aviso (si retira) -->
+                <div id="container-direccion" class="hidden mt-2">
+                    <label class="block text-xs text-gray-600 font-semibold mb-1">Tu dirección exacta de entrega:</label>
+                    <input type="text" id="modal-address" placeholder="Ej. Calle 10, Nro 45, Barrio..." class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-green-500">
+                </div>
+                <div id="container-retiro" class="mt-1">
+                    <p class="text-xs text-gray-500 font-medium">📍 Retiras en: <span class="font-bold text-gray-700">Local Principal Casa Manglar</span></p>
+                </div>
+            </div>
+
+            <!-- PASO B: Llave PIX -->
+            <div class="bg-gray-50 p-3 rounded-xl text-left border border-gray-200 mb-4">
+                <p class="text-xs text-gray-500 font-semibold mb-1">🔑 LLAVE PIX PARA TU PAGO:</p>
+                <div class="flex items-center justify-between bg-white p-2 rounded border border-gray-300">
+                    <span id="modal-pix-key" class="text-xs font-mono font-bold text-gray-800">TU_LLAVE_PIX_AQUI</span>
+                    <button onclick="copiarPix()" class="bg-gray-200 hover:bg-gray-300 text-xs px-2 py-1 rounded font-semibold text-gray-700">Copiar</button>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Beneficiario: <span id="modal-pix-name" class="font-semibold text-gray-700">Nombre del Titular</span></p>
+                <p class="text-xs text-red-600 font-semibold mt-1">⚠️ Copia tu clave PIX y haz clic abajo para enviar tu pedido.</p>
+            </div>
+
+            <!-- Botones de Acción Final -->
+            <button onclick="enviarWhatsAppYReiniciar()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow transition duration-200 mb-2 text-sm">
+                1. Enviar Pedido a WhatsApp 📲
+            </button>
+            <button onclick="cerrarModalSinEnviar()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-xl text-xs transition duration-200">
+                Cerrar ventana
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const WHATSAPP_NUMBER = "5554996856863"; 
+
+        // CONFIGURA TUS DATOS PIX AQUÍ
+        const PIX_KEY = "TU_LLAVE_PIX_AQUI"; 
+        const PIX_NAME = "Nombre del Titular o Banco";
+
+        const products = [
+            { id: 1, name: "Harina P.A.N. Blanca 1kg", price: 15.00, emoji: "🌽" },
+            { id: 2, name: "Harina P.A.N. Amarilla 1kg", price: 15.00, emoji: "🌽" },
+            { id: 3, name: "Diablitos Underwood Lata 115g", price: 12.00, emoji: "👹" },
+            { id: 4, name: "Malta Polar Lata", price: 8.00, emoji: "🍺" },
+            { id: 5, name: "Pack 6 Maltas Polars", price: 45.00, emoji: "📦" }
+        ];
+
+        let cart = {};
+        let clienteInfo = { name: "" };
+        let tipoEntregaSeleccionada = "retiro"; // por defecto retirar
+
+        function iniciarCatalogo() {
+            const nameInput = document.getElementById('client-name').value.trim();
+
+            if (nameInput === "") {
+                alert("Por favor, ingresa tu nombre para continuar.");
+                return;
+            }
+
+            clienteInfo.name = nameInput;
+
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('catalog-screen').classList.remove('hidden');
+            document.getElementById('greeting-text').innerText = `¡Hola, ${clienteInfo.name}! 👋`;
+
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('product-list');
+            container.innerHTML = products.map(product => `
+                <div class="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">${product.emoji}</span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${product.name}</h3>
+                            <p class="text-gray-500 text-sm">$${product.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="updateQuantity(${product.id}, -1)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 w-8 h-8 rounded-full font-bold flex items-center justify-center">-</button>
+                        <span id="qty-${product.id}" class="font-bold w-4 text-center">0</span>
+                        <button onclick="updateQuantity(${product.id}, 1)" class="bg-green-500 hover:bg-green-600 text-white w-8 h-8 rounded-full font-bold flex items-center justify-center">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateQuantity(productId, change) {
+            if (!cart[productId]) {
+                cart[productId] = 0;
+            }
+            cart[productId] += change;
+
+            if (cart[productId] < 0) {
+                cart[productId] = 0;
+            }
+
+            document.getElementById(`qty-${productId}`).innerText = cart[productId];
+            updateCartSummary();
+        }
+
+        function updateCartSummary() {
+            let total = 0;
+            let hasItems = false;
+
+            for (let id in cart) {
+                if (cart[id] > 0) {
+                    const product = products.find(p => p.id == id);
+                    total += product.price * cart[id];
+                    hasItems = true;
+                }
+            }
+
+            const cartBar = document.getElementById('cart-bar');
+            const totalElement = document.getElementById('cart-total');
+
+            totalElement.innerText = `$${total.toFixed(2)}`;
+
+            if (hasItems) {
+                cartBar.classList.remove('hidden');
+            } else {
+                cartBar.classList.add('hidden');
+            }
+        }
+
+        function seleccionarEntrega(tipo) {
+            tipoEntregaSeleccionada = tipo;
+            const btnRetiro = document.getElementById('btn-retiro');
+            const btnEnvio = document.getElementById('btn-envio');
+            const boxDireccion = document.getElementById('container-direccion');
+            const boxRetiro = document.getElementById('container-retiro');
+
+            if (tipo === 'retiro') {
+                btnRetiro.className = "py-2 px-3 text-xs font-semibold rounded-lg border border-green-500 bg-green-50 text-green-700 transition";
+                btnEnvio.className = "py-2 px-3 text-xs font-semibold rounded-lg border border-gray-300 bg-white text-gray-700 transition";
+                boxDireccion.classList.add('hidden');
+                boxRetiro.classList.remove('hidden');
+            } else {
+                btnEnvio.className = "py-2 px-3 text-xs font-semibold rounded-lg border border-green-500 bg-green-50 text-green-700 transition";
+                btnRetiro.className = "py-2 px-3 text-xs font-semibold rounded-lg border border-gray-300 bg-white text-gray-700 transition";
+                boxRetiro.classList.add('hidden');
+                boxDireccion.classList.remove('hidden');
+            }
+        }
+
+        function prepararPedido() {
+            const orderNumber = Math.floor(1000 + Math.random() * 9000);
+
+            // Reiniciamos al abrir por defecto en Retiro
+            seleccionarEntrega('retiro');
+            document.getElementById('modal-address').value = "";
+
+            document.getElementById('modal-order-number').innerText = `N° de Pedido: #CM-${orderNumber}`;
+            document.getElementById('modal-pix-key').innerText = PIX_KEY;
+            document.getElementById('modal-pix-name').innerText = PIX_NAME;
+            document.getElementById('pix-modal').classList.remove('hidden');
+        }
+
+        function copiarPix() {
+            const pixText = document.getElementById('modal-pix-key').innerText;
+            navigator.clipboard.writeText(pixText).then(() => {
+                alert("¡Llave PIX copiada con éxito!");
+            });
+        }
+
+        function enviarWhatsAppYReiniciar() {
+            const orderNumText = document.getElementById('modal-order-number').innerText;
+            let infoEntregaTexto = "";
+
+            if (tipoEntregaSeleccionada === 'retiro') {
+                infoEntregaTexto = "📍 *Método:* Retira en el Local";
+            } else {
+                const direccionCliente = document.getElementById('modal-address').value.trim();
+                if (direccionCliente === "") {
+                    alert("Por favor, ingresa tu dirección para el envío a domicilio.");
+                    return;
+                }
+                infoEntregaTexto = `🛵 *Método:* Envío a Domicilio\n📍 *Dirección:* ${direccionCliente}`;
+            }
+
+            let mensaje = `¡Hola! 👋 Mi nombre es *${clienteInfo.name}* y quiero hacer un pedido:\n`;
+            mensaje += `🔢 *N° de Pedido:* ${orderNumText.replace('N° de Pedido: ', '')}\n`;
+            mensaje += `${infoEntregaTexto}\n*Detalle del pedido:*\n`;
+            
+            let total = 0;
+
+            for (let id in cart) {
+                if (cart[id] > 0) {
+                    const product = products.find(p => p.id == id);
+                    const subtotal = product.price * cart[id];
+                    total += subtotal;
+                    mensaje += `▪️ ${cart[id]}x ${product.name} ($${subtotal.toFixed(2)})\n`;
+                }
+            }
+
+            mensaje += `\n*Total a pagar: $${total.toFixed(2)}*\n\nPor favor, confírmenme la recepción del pedido. ¡Gracias!`;
+
+            const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+
+            // Cerramos el modal y recargamos la página
+            document.getElementById('pix-modal').classList.add('hidden');
+            location.reload();
+        }
+
+        function cerrarModalSinEnviar() {
+            document.getElementById('pix-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa Manglar Alimentos - Pedidos por WhatsApp</title>
+    <!-- Tailwind CSS para un diseño rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- ========================================= -->
+    <!-- 1. PANTALLA DE BIENVENIDA                 -->
+    <!-- ========================================= -->
+    <div id="welcome-screen" class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center">
+            <div class="flex justify-center mb-4">
             <img src="logo.png" alt="Logo de la Bodega" class="w-41 h-41 object-contain rounded-full shadow-sm">
         </div>
            <h1 class="text-2xl font-bold text-gray-800 mb-2">Casa Manglar Alimentos.</h1>
